@@ -1,4 +1,127 @@
 from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+# Đường dẫn ảnh (bạn có thể thay đổi tên file nếu khác)
+IMAGE_PATH = 'balloons_noisy.png'
+
+# Biến đổi 1: Image Inverse Transformation
+def inverse_transformation(img):
+    im1 = np.asarray(img)
+    im2 = 255 - im1
+    return Image.fromarray(im2)
+
+# Biến đổi 2: Gamma Correction
+def gamma_correction(img, gamma=0.5):
+    im1 = np.asarray(img)
+    b1 = im1.astype(float)
+    b2 = np.max(b1)
+    b3 = b1 / b2
+    b2 = np.log(b3) * gamma
+    c = np.exp(b2) * 255.0
+    cl = c.astype(int)
+    return Image.fromarray(cl)
+
+# Biến đổi 3: Log Transformation
+def log_transformation(img):
+    im1 = np.asarray(img)
+    b1 = im1.astype(float)
+    b2 = np.max(b1)
+    c = (128.0 * np.log(1 + b1)) / np.log(1 + b2)
+    cl = c.astype(int)
+    return Image.fromarray(cl)
+
+# Biến đổi 4: Histogram Equalization
+def histogram_equalization(img):
+    im1 = np.asarray(img).flatten()
+    hist, bins = np.histogram(im1, 256, [0, 255])
+    cdf = hist.cumsum()
+    cdf_m = np.ma.masked_equal(cdf, 0)
+    cdf_m = (cdf_m - cdf_m.min()) * 255 / (cdf_m.max() - cdf_m.min())
+    cdf = np.ma.filled(cdf_m, 0).astype('uint8')
+    im2 = cdf[im1]
+    im3 = im2.reshape((img.size[1], img.size[0]))
+    return Image.fromarray(im3)
+
+# Biến đổi 5: Contrast Stretching
+def contrast_stretching(img):
+    im1 = np.asarray(img)
+    b = im1.max()
+    a = im1.min()
+    c = im1.astype(float)
+    im2 = 255 * ((c - a) / (b - a))
+    im3 = Image.fromarray(im2.astype(np.uint8))
+    return im3
+
+# Hàm chính hiển thị menu và thực hiện biến đổi
+def main():
+    img = Image.open(IMAGE_PATH).convert('L')
+    print("Chọn phương pháp biến đổi ảnh:")
+    print("I - Image Inverse Transformation")
+    print("G - Gamma Correction")
+    print("L - Log Transformation")
+    print("H - Histogram Equalization")
+    print("C - Contrast Stretching")
+
+    choice = input("Nhập lựa chọn (I/G/L/H/C): ").upper()
+
+    if choice == 'I':
+        result = inverse_transformation(img)
+    elif choice == 'G':
+        result = gamma_correction(img)
+    elif choice == 'L':
+        result = log_transformation(img)
+    elif choice == 'H':
+        result = histogram_equalization(img)
+    elif choice == 'C':
+        result = contrast_stretching(img)
+    else:
+        print("Lựa chọn không hợp lệ.")
+        return
+
+    # Hiển thị ảnh gốc và ảnh đã xử lý
+    img.show(title='Ảnh Gốc')
+    result.show(title='Ảnh Sau Biến Đổi')
+
+    # Hoặc dùng matplotlib để hiển thị
+    plt.subplot(1, 2, 1)
+    plt.imshow(np.asarray(img), cmap='gray')
+    plt.title("Original")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(np.asarray(result), cmap='gray')
+    plt.title("Transformed")
+
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from PIL import Image
 import math
 import numpy as np
 import matplotlib.pyplot as plt
